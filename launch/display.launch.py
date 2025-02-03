@@ -13,8 +13,8 @@ def generate_launch_description():
     robot_state_publisher_node = launch_ros.actions.Node(
         package='robot_state_publisher',
         executable='robot_state_publisher',
-        # parameters=[{'robot_description': Command(['xacro ', LaunchConfiguration('model'),' namespace:=', namespaceee])}]
-        parameters=[{'robot_description': Command(['xacro ', LaunchConfiguration('model')])}]
+        namespace=namespaceee,
+        parameters=[{'robot_description': Command(['xacro ', LaunchConfiguration('model'),' namespace:=', namespaceee])}]
     )
     joint_state_publisher_node = launch_ros.actions.Node(
         package='joint_state_publisher',
@@ -43,7 +43,20 @@ def generate_launch_description():
        name='ekf_filter_node',
        output='screen',
        namespace = namespaceee,
-       parameters=[os.path.join(pkg_share, 'config/ekf.yaml'), {'use_sim_time': LaunchConfiguration('use_sim_time')}, {'odom0': 'demo/odom'},{'imu0':'demo/imu'}]
+       parameters=[ os.path.join(pkg_share, 'config/ekf.yaml'),
+                    {'use_sim_time': LaunchConfiguration('use_sim_time')},
+                    {'odom0': f'/{namespaceee}/odom'}, 
+                    {'odom0_config': [True,  True,  True,
+                                        False, False, False,
+                                        False, False, False,
+                                        False, False, True,
+                                        False, False, False]},
+                    {'imu0': f'/{namespaceee}/imu'},
+                    {'imu0_config': [False, False, False,
+                      True,  True,  True,
+                      False, False, False,
+                      False, False, False,
+                      False, False, False]}]
     )
 
     return launch.LaunchDescription([

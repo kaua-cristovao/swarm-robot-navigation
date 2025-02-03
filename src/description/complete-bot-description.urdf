@@ -160,7 +160,7 @@
     <sensor name="imu_sensor" type="imu">
     <plugin filename="libgazebo_ros_imu_sensor.so" name="imu_plugin">
         <ros>
-          <!-- <namespace>${namespace}</namespace> -->
+          <namespace>$(arg namespace)</namespace>
           <remapping>~/out:=imu</remapping>
         </ros>
         <initial_orientation_as_reference>false</initial_orientation_as_reference>
@@ -227,9 +227,9 @@
 
   <gazebo>
     <plugin name='diff_drive' filename='libgazebo_ros_diff_drive.so'>
-      <!-- <ros>
-        <namespace>${namespace}</namespace>
-      </ros> -->
+      <ros>
+        <namespace>$(arg namespace)</namespace>
+      </ros>
       <!-- wheels -->
       <left_joint>drivewhl_l_joint</left_joint>
       <right_joint>drivewhl_r_joint</right_joint>
@@ -274,7 +274,7 @@
     </visual>
   </link>
 
-  <joint name="lidar_joint_${namespace}" type="fixed">
+  <joint name="lidar_joint" type="fixed">
     <parent link="base_link"/>
     <child link="lidar_link"/>
     <origin xyz="0 0 ${base_height/2+0.01}" rpy="0 0 0"/>
@@ -308,6 +308,7 @@
       <plugin name="scan" filename="libgazebo_ros_ray_sensor.so">
         <ros>
           <remapping>~/out:=scan</remapping>
+          <namespace>$(arg namespace)</namespace>
         </ros>
         <output_type>sensor_msgs/LaserScan</output_type>
         <frame_name>lidar_link</frame_name>
@@ -368,6 +369,9 @@
         </clip>
       </camera>
       <plugin name="depth_camera_controller" filename="libgazebo_ros_camera.so">
+        <ros>
+          <namespace>$(arg namespace)</namespace>
+        </ros>
         <baseline>0.2</baseline>
         <alwaysOn>true</alwaysOn>
         <updateRate>0.0</updateRate>
