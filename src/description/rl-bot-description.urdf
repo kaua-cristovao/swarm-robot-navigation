@@ -1,6 +1,8 @@
 <?xml version="1.0"?>
 <robot name="complete_bot" xmlns:xacro="http://ros.org/wiki/xacro">
   <!-- Define robot constants -->
+  <xacro:arg name="namespace" default="robot"/>
+
   <xacro:property name="base_height" value="0.18"/>
   <xacro:property name="base_radius" value="0.35"/>
 
@@ -154,7 +156,7 @@
     <sensor name="imu_sensor" type="imu">
     <plugin filename="libgazebo_ros_imu_sensor.so" name="imu_plugin">
         <ros>
-          <namespace>/demo</namespace>
+          <namespace>$(arg namespace)</namespace>
           <remapping>~/out:=imu</remapping>
         </ros>
         <initial_orientation_as_reference>false</initial_orientation_as_reference>
@@ -222,9 +224,8 @@
   <gazebo>
     <plugin name='diff_drive' filename='libgazebo_ros_diff_drive.so'>
       <ros>
-        <namespace>/demo</namespace>
+        <namespace>$(arg namespace)</namespace>
       </ros>
-
       <!-- wheels -->
       <left_joint>drivewhl_l_joint</left_joint>
       <right_joint>drivewhl_r_joint</right_joint>

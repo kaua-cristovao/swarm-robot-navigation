@@ -3,6 +3,8 @@
   <!-- Define robot constants -->
   <!-- <xacro:property name="base_width" value="0.31"/>
   <xacro:property name="base_length" value="0.42"/> -->
+  <xacro:arg name="namespace" default="robot"/>
+
   <xacro:property name="base_height" value="0.18"/>
   <xacro:property name="base_radius" value="0.35"/>
 
@@ -158,7 +160,7 @@
     <sensor name="imu_sensor" type="imu">
     <plugin filename="libgazebo_ros_imu_sensor.so" name="imu_plugin">
         <ros>
-          <namespace>/demo</namespace>
+          <!-- <namespace>${namespace}</namespace> -->
           <remapping>~/out:=imu</remapping>
         </ros>
         <initial_orientation_as_reference>false</initial_orientation_as_reference>
@@ -225,10 +227,9 @@
 
   <gazebo>
     <plugin name='diff_drive' filename='libgazebo_ros_diff_drive.so'>
-      <ros>
-        <namespace>/demo</namespace>
-      </ros>
-
+      <!-- <ros>
+        <namespace>${namespace}</namespace>
+      </ros> -->
       <!-- wheels -->
       <left_joint>drivewhl_l_joint</left_joint>
       <right_joint>drivewhl_r_joint</right_joint>
@@ -273,7 +274,7 @@
     </visual>
   </link>
 
-  <joint name="lidar_joint" type="fixed">
+  <joint name="lidar_joint_${namespace}" type="fixed">
     <parent link="base_link"/>
     <child link="lidar_link"/>
     <origin xyz="0 0 ${base_height/2+0.01}" rpy="0 0 0"/>

@@ -8,16 +8,19 @@ def generate_launch_description():
     default_model_path = os.path.join(pkg_share, 'src/description/rl-bot-description.urdf')
     default_rviz_config_path = os.path.join(pkg_share, 'rviz/urdf_config.rviz')
     world_path = os.path.join(pkg_share, 'world/cenario.sdf')
+    namespaceee = 'xd'
 
     robot_state_publisher_node = launch_ros.actions.Node(
         package='robot_state_publisher',
         executable='robot_state_publisher',
+        # parameters=[{'robot_description': Command(['xacro ', LaunchConfiguration('model'),' namespace:=', namespaceee])}]
         parameters=[{'robot_description': Command(['xacro ', LaunchConfiguration('model')])}]
     )
     joint_state_publisher_node = launch_ros.actions.Node(
         package='joint_state_publisher',
         executable='joint_state_publisher',
         name='joint_state_publisher',
+        namespace = namespaceee,
         arguments=[default_model_path], #Add this line
     )
     rviz_node = launch_ros.actions.Node(
@@ -28,6 +31,7 @@ def generate_launch_description():
         arguments=['-d', LaunchConfiguration('rvizconfig')],
     )
     spawn_entity = launch_ros.actions.Node(
+        namespace = namespaceee,
         package='gazebo_ros',
         executable='spawn_entity.py',
         arguments=['-entity', 'complete_bot', '-topic', 'robot_description'],
@@ -38,6 +42,7 @@ def generate_launch_description():
        executable='ekf_node',
        name='ekf_filter_node',
        output='screen',
+       namespace = namespaceee,
        parameters=[os.path.join(pkg_share, 'config/ekf.yaml'), {'use_sim_time': LaunchConfiguration('use_sim_time')}, {'odom0': 'demo/odom'},{'imu0':'demo/imu'}]
     )
 
