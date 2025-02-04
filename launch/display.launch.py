@@ -56,7 +56,8 @@ def generate_launch_description():
                       True,  True,  True,
                       False, False, False,
                       False, False, False,
-                      False, False, False]}]
+                      False, False, False]},
+                    {'base_link_frame':f'{namespaceee}_base_link'}]
     )
 
     return launch.LaunchDescription([
