@@ -6,7 +6,7 @@ import os
 def generate_launch_description():
     pkg_share = launch_ros.substitutions.FindPackageShare(package='swarm-robot-navigation').find('swarm-robot-navigation')
     default_model_path = os.path.join(pkg_share, 'src/description/rl-bot-description.urdf')
-    default_rviz_config_path = os.path.join(pkg_share, 'rviz/urdf_config.rviz')
+    default_rviz_config_path = os.path.join(pkg_share, 'rviz/basic_urdf_config.rviz')
     world_path = os.path.join(pkg_share, 'world/cenario.sdf')
     namespaceee = 'xd'
 
@@ -34,31 +34,31 @@ def generate_launch_description():
         namespace = namespaceee,
         package='gazebo_ros',
         executable='spawn_entity.py',
-        arguments=['-entity', 'complete_bot', '-topic', 'robot_description'],
+        arguments=['-entity', 'complete_bot', '-topic', 'robot_description','-x', '1', '-y', '-1', '-z', '0.1'],
         output='screen'
     )
-    robot_localization_node = launch_ros.actions.Node(
-       package='robot_localization',
-       executable='ekf_node',
-       name='ekf_filter_node',
-       output='screen',
-       namespace = namespaceee,
-       parameters=[ os.path.join(pkg_share, 'config/ekf.yaml'),
-                    {'use_sim_time': LaunchConfiguration('use_sim_time')},
-                    {'odom0': f'/{namespaceee}/odom'}, 
-                    {'odom0_config': [True,  True,  True,
-                                        False, False, False,
-                                        False, False, False,
-                                        False, False, True,
-                                        False, False, False]},
-                    {'imu0': f'/{namespaceee}/imu'},
-                    {'imu0_config': [False, False, False,
-                      True,  True,  True,
-                      False, False, False,
-                      False, False, False,
-                      False, False, False]},
-                    {'base_link_frame':f'{namespaceee}_base_link'}]
-    )
+    # robot_localization_node = launch_ros.actions.Node(
+    #    package='robot_localization',
+    #    executable='ekf_node',
+    #    name='ekf_filter_node',
+    #    output='screen',
+    #    namespace = namespaceee,
+    #    parameters=[ os.path.join(pkg_share, 'config/ekf.yaml'),
+    #                 {'use_sim_time': LaunchConfiguration('use_sim_time')},
+    #                 {'odom0': f'/{namespaceee}/odom'}, 
+    #                 {'odom0_config': [True,  True,  True,
+    #                                     False, False, False,
+    #                                     False, False, False,
+    #                                     False, False, True,
+    #                                     False, False, False]},
+    #                 {'imu0': f'/{namespaceee}/imu'},
+    #                 {'imu0_config': [False, False, False,
+    #                   True,  True,  False,
+    #                   False, False, False,
+    #                   False, False, False,
+    #                   False, False, False]},
+    #                 {'base_link_frame':f'{namespaceee}_base_link'}]
+    # )
 
     return launch.LaunchDescription([
         launch.actions.DeclareLaunchArgument(name='model', default_value=default_model_path,
@@ -71,6 +71,6 @@ def generate_launch_description():
         joint_state_publisher_node,
         spawn_entity,   
         robot_state_publisher_node, 
-        robot_localization_node,
+        # robot_localization_node,
         rviz_node
     ])
