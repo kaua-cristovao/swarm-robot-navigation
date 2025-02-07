@@ -5,18 +5,15 @@ import launch_ros
 import os
 
 def create_rviz_file(insert_text):
-    print("executando create_rviz_file")
     pkg_share = launch_ros.substitutions.FindPackageShare(package='swarm-robot-navigation').find('swarm-robot-navigation')
     default_rviz_config_path = os.path.join(pkg_share, 'rviz/urdf_config.rviz')
     dynamic_rviz_config_path = os.path.join(pkg_share, 'rviz/dynamic_urdf_config.rviz')
-    print(dynamic_rviz_config_path)
 
     with open(dynamic_rviz_config_path, 'w') as dynamic_file:
         with open(default_rviz_config_path, 'r') as urdf_file:
 
             lines = urdf_file.readlines()
             for line in lines:
-                print(f"lido linha {line}")
                 dynamic_file.write(line)  
                 if 'Name: Grid' in line:
                     dynamic_file.write(insert_text) 
@@ -98,7 +95,6 @@ def generate_robots(context):
 
         # Adiciona os nós gerados à lista
         robot_nodes.extend([robot_state_publisher, joint_state_publisher, spawn_entity, robot_localization])
-    print(insert)
     create_rviz_file(insert)
     return robot_nodes
 
