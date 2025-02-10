@@ -37,28 +37,6 @@ def generate_launch_description():
         arguments=['-entity', 'complete_bot', '-topic', 'robot_description','-x', '1', '-y', '-1', '-z', '0.1'],
         output='screen'
     )
-    # robot_localization_node = launch_ros.actions.Node(
-    #    package='robot_localization',
-    #    executable='ekf_node',
-    #    name='ekf_filter_node',
-    #    output='screen',
-    #    namespace = namespaceee,
-    #    parameters=[ os.path.join(pkg_share, 'config/ekf.yaml'),
-    #                 {'use_sim_time': LaunchConfiguration('use_sim_time')},
-    #                 {'odom0': f'/{namespaceee}/odom'}, 
-    #                 {'odom0_config': [True,  True,  True,
-    #                                     False, False, False,
-    #                                     False, False, False,
-    #                                     False, False, True,
-    #                                     False, False, False]},
-    #                 {'imu0': f'/{namespaceee}/imu'},
-    #                 {'imu0_config': [False, False, False,
-    #                   True,  True,  False,
-    #                   False, False, False,
-    #                   False, False, False,
-    #                   False, False, False]},
-    #                 {'base_link_frame':f'{namespaceee}_base_link'}]
-    # )
 
     return launch.LaunchDescription([
         launch.actions.DeclareLaunchArgument(name='model', default_value=default_model_path,

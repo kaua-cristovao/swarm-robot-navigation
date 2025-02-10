@@ -69,32 +69,8 @@ def generate_robots(context):
             output='screen'
         )
 
-        # Nó do robot_localization (EKF) para cada robô
-        robot_localization = launch_ros.actions.Node(
-            package='robot_localization',
-            executable='ekf_node',
-            namespace=robot_name,
-            name='ekf_filter_node',
-            output='screen',
-            parameters=[os.path.join(pkg_share, 'config/ekf.yaml'), 
-                        {'use_sim_time': LaunchConfiguration('use_sim_time')}, 
-                        {'odom0': f'/{robot_name}/odom'}, 
-                        {'odom0_config': [True,  True,  True,
-                                            False, False, False,
-                                            False, False, False,
-                                            False, False, True,
-                                            False, False, False]},
-                        {'imu0': f'/{robot_name}/imu'},
-                        {'imu0_config': [False, False, False,
-                        True,  True,  True,
-                        False, False, False,
-                        False, False, False,
-                        False, False, False]},
-                        {'base_link_frame':f'{robot_name}_base_link'}]
-        )
-
         # Adiciona os nós gerados à lista
-        robot_nodes.extend([robot_state_publisher, joint_state_publisher, spawn_entity, robot_localization])
+        robot_nodes.extend([robot_state_publisher, joint_state_publisher, spawn_entity])
     create_rviz_file(insert)
     return robot_nodes
 
