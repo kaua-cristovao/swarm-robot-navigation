@@ -69,7 +69,7 @@
       <background>0.7 0.7 0.7 1</background>
       <shadows>1</shadows>
     </scene>
-    <!-- <model name='unit_box'>
+    <model name='unit_box'>
       <pose>1.51271 -0.181418 0.5 0 -0 0</pose>
       <link name='link'>
         <inertial>
@@ -174,7 +174,7 @@
         <enable_wind>0</enable_wind>
         <kinematic>0</kinematic>
       </link>
-    </model> -->
+    </model>
     <state world_name='default'>
       <sim_time>0 0</sim_time>
       <real_time>0 0</real_time>
@@ -190,7 +190,7 @@
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
-      <!-- <model name='unit_box'>
+      <model name='unit_box'>
         <pose>1.51272 -0.181418 0.499995 0 1e-05 0</pose>
         <scale>1 1 1</scale>
         <link name='link'>
@@ -209,7 +209,7 @@
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
-      </model> -->
+      </model>
       <light name='sun'>
         <pose>0 0 10 0 -0 0</pose>
       </light>
