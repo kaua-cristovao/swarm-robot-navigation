@@ -24,7 +24,7 @@ def generate_launch_description():
     # Configs
     namespaceee = 'xd'
 
-    lifecycle_nodes = ['controller_server','planner_server',]
+    lifecycle_nodes = ['controller_server','planner_server','bt_navigator']
 
     # Nodes
     robot_state_publisher_node = Node(
@@ -65,6 +65,12 @@ def generate_launch_description():
         executable='planner_server',
         output='screen',
         parameters=[default_nav2bring_config],
+    )
+    nav2_bt_navigator = Node(
+        package='nav2_bt_navigator',
+        executable='bt_navigator',
+        output='screen',
+        parameters=[default_nav2bring_config]
     )
     lifecycle_manager = Node(
         package='nav2_lifecycle_manager',
@@ -109,5 +115,6 @@ def generate_launch_description():
         slam_launch,
         nav2_controller,
         nav2_planner,
+        nav2_bt_navigator,
         lifecycle_manager
     ])

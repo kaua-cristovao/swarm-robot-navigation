@@ -51,6 +51,8 @@ Visualization Manager:
     - Class: rviz_default_plugins/FocusCamera
     - Class: rviz_default_plugins/Measure
       Line color: 128; 128; 0
+    - Class: rviz_default_plugins/SetGoal
+      Topic: /goal_pose
   Transformation:
     Current:
       Class: rviz_default_plugins/TF
