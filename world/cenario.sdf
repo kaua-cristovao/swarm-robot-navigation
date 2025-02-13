@@ -70,7 +70,6 @@
       <shadows>1</shadows>
     </scene>
     <model name='unit_box'>
-      <pose>1.51271 -0.181418 0.5 0 -0 0</pose>
       <link name='link'>
         <inertial>
           <mass>1</mass>
@@ -123,7 +122,6 @@
       </link>
     </model>
     <model name='unit_sphere'>
-      <pose>-1.89496 2.36764 0.5 0 -0 0</pose>
       <link name='link'>
         <inertial>
           <mass>1</mass>
@@ -191,24 +189,12 @@
         </link>
       </model>
       <model name='unit_box'>
-        <pose>1.51272 -0.181418 0.499995 0 1e-05 0</pose>
+        <pose>1.5 -3.5 0.5 0 0 0</pose>
         <scale>1 1 1</scale>
-        <link name='link'>
-          <pose>1.51272 -0.181418 0.499995 0 1e-05 0</pose>
-          <velocity>0 0 0 0 -0 0</velocity>
-          <acceleration>0.010615 -0.006191 -9.78231 0.012424 0.021225 1.8e-05</acceleration>
-          <wrench>0.010615 -0.006191 -9.78231 0 -0 0</wrench>
-        </link>
       </model>
       <model name='unit_sphere'>
-        <pose>-0.725833 1.36206 0.5 0 -0 0</pose>
+        <pose>-1 1 0.5 0 -0 0</pose>
         <scale>1 1 1</scale>
-        <link name='link'>
-          <pose>-0.944955 1.09802 0.5 0 -0 0</pose>
-          <velocity>0 0 0 0 -0 0</velocity>
-          <acceleration>0 0 0 0 -0 0</acceleration>
-          <wrench>0 0 0 0 -0 0</wrench>
-        </link>
       </model>
       <light name='sun'>
         <pose>0 0 10 0 -0 0</pose>
