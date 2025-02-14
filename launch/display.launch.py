@@ -58,19 +58,19 @@ def generate_launch_description():
         package='nav2_controller',
         executable='controller_server',
         output='screen',
-        parameters=[default_nav2bring_config],
+        parameters=[default_nav2bring_config,{'robot_base_frame':'xd_base_link'}],
     )
     nav2_planner = Node(
         package='nav2_planner',
         executable='planner_server',
         output='screen',
-        parameters=[default_nav2bring_config],
+        parameters=[default_nav2bring_config,{'robot_base_frame':'xd_base_link'}],
     )
     nav2_bt_navigator = Node(
         package='nav2_bt_navigator',
         executable='bt_navigator',
         output='screen',
-        parameters=[default_nav2bring_config]
+        parameters=[default_nav2bring_config, {'default_nav_to_pose_bt_xml': join(pkg_share,'behavior_tree/basic_tree.xml'),'default_nav_through_poses_bt_xml': join(pkg_share,'behavior_tree/basic_tree.xml'),'robot_base_frame':'xd_base_link'}],
     )
     lifecycle_manager = Node(
         package='nav2_lifecycle_manager',
@@ -112,6 +112,7 @@ def generate_launch_description():
         joint_state_publisher_node,
         robot_state_publisher_node,
         rviz_node,
+        # nav2_launch,
         slam_launch,
         nav2_controller,
         nav2_planner,

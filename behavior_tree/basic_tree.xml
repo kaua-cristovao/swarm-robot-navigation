@@ -1,0 +1,10 @@
+<root main_tree_to_execute="MainTree">
+  <BehaviorTree ID="MainTree">
+    <PipelineSequence name="NavigateWithReplanning">
+      <DistanceController distance="1.0">
+        <ComputePathToPose start="xd_base_link" goal="{goal}" path="{path}"/>
+      </DistanceController>
+      <FollowPath path="{path}"/>
+    </PipelineSequence>
+  </BehaviorTree>
+</root>
