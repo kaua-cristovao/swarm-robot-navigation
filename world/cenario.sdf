@@ -56,20 +56,8 @@
         <kinematic>0</kinematic>
       </link>
     </model>
-    <gravity>0 0 -9.8</gravity>
-    <!-- <magnetic_field>6e-06 2.3e-05 -4.2e-05</magnetic_field>
-    <atmosphere type='adiabatic'/> -->
-    <physics type='ode'>
-      <max_step_size>0.001</max_step_size>
-      <real_time_factor>1</real_time_factor>
-      <real_time_update_rate>1000</real_time_update_rate>
-    </physics>
-    <scene>
-      <ambient>0.4 0.4 0.4 1</ambient>
-      <background>0.7 0.7 0.7 1</background>
-      <shadows>1</shadows>
-    </scene>
-    <model name='unit_box'>
+    <!-- Alvo -->
+    <model name='colored_box'>
       <link name='link'>
         <inertial>
           <mass>1</mass>
@@ -111,7 +99,7 @@
           </geometry>
           <material>
             <script>
-              <name>Gazebo/Grey</name>
+              <name>Gazebo/Pink</name>
               <uri>file://media/materials/scripts/gazebo.material</uri>
             </script>
           </material>
@@ -119,6 +107,79 @@
         <self_collide>0</self_collide>
         <enable_wind>0</enable_wind>
         <kinematic>0</kinematic>
+      </link>
+    </model>
+    <!-- Obstáculos -->
+    <model name='unit_box_1'>
+      <link name="link">
+        <inertial>
+          <mass>1</mass>
+          <inertia>
+            <ixx>0.166667</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>0.166667</iyy>
+            <iyz>0</iyz>
+            <izz>0.166667</izz>
+          </inertia>
+          <pose>0 0 0 0 0 0</pose>
+        </inertial>
+        <collision name="collision">
+          <geometry>
+            <box>
+              <size>1 1 1</size>
+            </box>
+          </geometry>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <box>
+              <size>1 1 1</size>
+            </box>
+          </geometry>
+          <material>
+            <script>
+              <name>Gazebo/Grey</name>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+            </script>
+          </material>
+        </visual>
+      </link>
+    </model>
+    <model name='unit_box_2'>
+      <link name="link">
+        <inertial>
+          <mass>1</mass>
+          <inertia>
+            <ixx>0.166667</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>0.166667</iyy>
+            <iyz>0</iyz>
+            <izz>0.166667</izz>
+          </inertia>
+          <pose>0 0 0 0 0 0</pose>
+        </inertial>
+        <collision name="collision">
+          <geometry>
+            <box>
+              <size>1 1 1</size>
+            </box>
+          </geometry>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <box>
+              <size>1 1 1</size>
+            </box>
+          </geometry>
+          <material>
+            <script>
+              <name>Gazebo/Grey</name>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+            </script>
+          </material>
+        </visual>
       </link>
     </model>
     <model name='unit_sphere'>
@@ -173,6 +234,120 @@
         <kinematic>0</kinematic>
       </link>
     </model>
+    <!-- Paredes -->
+    <model name='unit_box_3'>
+      <link name="link">
+        <static>1</static>
+        <collision name="collision">
+          <geometry>
+            <box>
+              <size>1 1 1</size>
+            </box>
+          </geometry>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <box>
+              <size>1 1 1</size>
+            </box>
+          </geometry>
+          <material>
+            <script>
+              <name>Gazebo/Grey</name>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+            </script>
+          </material>
+        </visual>
+      </link>
+    </model>
+    <model name='unit_box_4'>
+      <link name="link">
+        <static>1</static>
+        <collision name="collision">
+          <geometry>
+            <box>
+              <size>1 1 1</size>
+            </box>
+          </geometry>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <box>
+              <size>1 1 1</size>
+            </box>
+          </geometry>
+          <material>
+            <script>
+              <name>Gazebo/Grey</name>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+            </script>
+          </material>
+        </visual>
+      </link>
+    </model>
+    <model name='unit_box_5'>
+      <link name="link">
+        <static>1</static>
+        <collision name="collision">
+          <geometry>
+            <box>
+              <size>1 1 1</size>
+            </box>
+          </geometry>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <box>
+              <size>1 1 1</size>
+            </box>
+          </geometry>
+          <material>
+            <script>
+              <name>Gazebo/Grey</name>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+            </script>
+          </material>
+        </visual>
+      </link>
+    </model>
+    <model name='unit_box_6'>
+      <link name="link">
+        <static>1</static>
+        <collision name="collision">
+          <geometry>
+            <box>
+              <size>1 1 1</size>
+            </box>
+          </geometry>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <box>
+              <size>1 1 1</size>
+            </box>
+          </geometry>
+          <material>
+            <script>
+              <name>Gazebo/Grey</name>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+            </script>
+          </material>
+        </visual>
+      </link>
+    </model>
+    <gravity>0 0 -9.8</gravity>
+    <!-- <magnetic_field>6e-06 2.3e-05 -4.2e-05</magnetic_field>
+    <atmosphere type='adiabatic'/> -->
+    <physics type='ode'>
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>1</real_time_factor>
+      <real_time_update_rate>1000</real_time_update_rate>
+    </physics>
+    <scene>
+      <ambient>0.4 0.4 0.4 1</ambient>
+      <background>0.7 0.7 0.7 1</background>
+      <shadows>1</shadows>
+    </scene>  
     <state world_name='default'>
       <sim_time>0 0</sim_time>
       <real_time>0 0</real_time>
@@ -188,13 +363,40 @@
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
-      <model name='unit_box'>
+      <!-- Alvo -->
+      <model name='colored_box'>
         <pose>1.5 -3.5 0.5 0 0 0</pose>
         <scale>1 1 1</scale>
       </model>
-      <model name='unit_sphere'>
-        <pose>-1 1 0.5 0 -0 0</pose>
+      <!-- Obstáculos -->
+      <model name='unit_box_1'>
+        <pose>-2.5 -3 0.5 0 0 0.707</pose>
         <scale>1 1 1</scale>
+      </model>
+      <model name='unit_box_2'>
+        <pose>3 0.5 0.5 0 0 0.866</pose>
+        <scale>1 1 1</scale>
+      </model>
+      <model name='unit_sphere'>
+        <pose>-2.5 3 0.5 0 -0 0</pose>
+        <scale>1 1 1</scale>
+      </model>
+      <!-- Paredes -->
+      <model name='unit_box_3'>
+        <pose>-5 -0.5 0.5 0 0 1.570</pose>
+        <scale>10 1 1</scale>
+      </model>
+      <model name='unit_box_4'>
+        <pose>0.5 -5 0.5 0 0 0</pose>
+        <scale>10 1 1</scale>
+      </model>
+      <model name='unit_box_5'>
+        <pose>5 0.5 0.5 0 0 1.570</pose>
+        <scale>10 1 1</scale>
+      </model>
+      <model name='unit_box_6'>
+        <pose>-0.5 5 0.5 0 0 0</pose>
+        <scale>10 1 1</scale>
       </model>
       <light name='sun'>
         <pose>0 0 10 0 -0 0</pose>

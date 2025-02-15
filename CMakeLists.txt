@@ -17,16 +17,16 @@ find_package(geometry_msgs REQUIRED)
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
 
-add_executable(minimal_navigator src/minimal_navigator.cpp)
-ament_target_dependencies(minimal_navigator rclcpp std_msgs nav2_msgs rclcpp_action geometry_msgs)
+# add_executable(minimal_navigator src/minimal_navigator.cpp)
+# ament_target_dependencies(minimal_navigator rclcpp std_msgs nav2_msgs rclcpp_action geometry_msgs)
 
   # target_include_directories(minimal_navigator PUBLIC
   #   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   #   $<INSTALL_INTERFACE:include>)
 # target_compile_features(my_node PUBLIC c_std_99 cxx_std_17)  # Require C99 and C++17
 
-install(TARGETS minimal_navigator
-  DESTINATION lib/${PROJECT_NAME})
+# install(TARGETS minimal_navigator
+#   DESTINATION lib/${PROJECT_NAME})
 
 install(
   DIRECTORY src launch rviz config world behavior_tree

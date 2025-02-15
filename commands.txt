@@ -1,5 +1,5 @@
 pkill gazebo
-colcon build && source install/setup.bash && ros2 launch swarm-robot-navigation display.launch.py
+colcon build && source install/setup.bash && ros2 launch swarm-robot-navigation tutorial.launch.py
 ros2 topic pub /xd/cmd_vel geometry_msgs/msg/Twist '{linear: {x: 0.1, y: 0.0, z: 0.0}, angular: {x: 0.0, y: 0.0, z: 0.05}}'
 ros2 run tf2_tools view_frames
 ros2 run gazebo_ros spawn_entity.py -entity rl_bot -topic xd/robot_description -x 1 -y -1 -z 0.1
