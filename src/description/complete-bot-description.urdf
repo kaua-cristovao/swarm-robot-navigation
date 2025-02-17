@@ -3,7 +3,7 @@
   <!-- Define robot constants -->
   <xacro:property name="base_width" value="0.31"/>
   <xacro:property name="base_length" value="0.42"/>
-  <xacro:arg name="namespace" default="robot"/>
+  <!-- <xacro:arg name="namespace" default="robot"/> -->
 
   <xacro:property name="base_height" value="0.10"/>
 
@@ -40,7 +40,7 @@
   </xacro:macro>
 
   <!-- Robot Base -->
-  <link name="$(arg namespace)_base_link">
+  <link name="base_link">
     <visual>
       <geometry>
         <box size="${base_length} ${base_width} ${base_height}"/>
@@ -60,17 +60,17 @@
 
 
 	<!-- Robot Footprint -->
-  <link name="$(arg namespace)_base_footprint"/>
+  <link name="base_footprint"/>
 
-  <joint name="$(arg namespace)_base_joint" type="fixed">
-    <parent link="$(arg namespace)_base_link"/>
-    <child link="$(arg namespace)_base_footprint"/>
+  <joint name="base_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="base_footprint"/>
     <origin xyz="0.0 0.0 ${-(wheel_radius+wheel_zoff)}" rpy="0 0 0"/>
   </joint>
 
 	<!-- Wheels -->
   <xacro:macro name="wheel" params="prefix x_reflect y_reflect">
-    <link name="$(arg namespace)_${prefix}_link">
+    <link name="${prefix}_link">
       <visual>
         <origin xyz="0 0 0" rpy="${pi/2} 0 0"/>
         <geometry>
@@ -99,9 +99,9 @@
       <xacro:cylinder_inertia m="5" r="${wheel_radius}" h="${wheel_width}"/>
     </link>
 
-    <joint name="$(arg namespace)_${prefix}_joint" type="continuous">
-      <parent link="$(arg namespace)_base_link"/>
-      <child link="$(arg namespace)_${prefix}_link"/>
+    <joint name="${prefix}_joint" type="continuous">
+      <parent link="base_link"/>
+      <child link="${prefix}_link"/>
       <origin xyz="${x_reflect*wheel_xoff} ${y_reflect*0.175} ${-wheel_zoff}" rpy="0 0 0"/>
       <axis xyz="0 1 0"/>
     </joint>
@@ -113,7 +113,7 @@
   <xacro:wheel prefix="drivewhl_r" x_reflect="-1" y_reflect="-1" />
 
   <!-- Caster Wheel -->
-  <link name="$(arg namespace)_front_caster">
+  <link name="front_caster">
     <visual>
       <geometry>
         <sphere radius="${(wheel_radius+wheel_zoff-(base_height/2))}"/>
@@ -132,20 +132,17 @@
     <xacro:sphere_inertia m="5" r="${(wheel_radius+wheel_zoff-(base_height/2))}"/>
   </link>
 
-  <joint name="$(arg namespace)_caster_joint" type="continuous">
-    <parent link="$(arg namespace)_base_link"/>
-    <child link="$(arg namespace)_front_caster"/>
+  <joint name="caster_joint" type="continuous">
+    <parent link="base_link"/>
+    <child link="front_caster"/>
     <origin xyz="${caster_xoff} 0.0 ${-(base_height/2)}" rpy="0 0 0"/>
   </joint>
 
   <gazebo>
     <plugin name='diff_drive' filename='libgazebo_ros_diff_drive.so'>
-      <ros>
-        <namespace>$(arg namespace)</namespace>
-      </ros>
       <!-- wheels -->
-      <left_joint>$(arg namespace)_drivewhl_l_joint</left_joint>
-      <right_joint>$(arg namespace)_drivewhl_r_joint</right_joint>
+      <left_joint>drivewhl_l_joint</left_joint>
+      <right_joint>drivewhl_r_joint</right_joint>
 
       <!-- kinematics -->
       <wheel_separation>0.4</wheel_separation>
@@ -161,11 +158,11 @@
       <publish_wheel_tf>true</publish_wheel_tf>
 
       <odometry_frame>odom</odometry_frame>
-      <robot_base_frame>$(arg namespace)_base_link</robot_base_frame>
+      <robot_base_frame>base_link</robot_base_frame>
     </plugin>
   </gazebo>
 
-  <link name="$(arg namespace)_lidar_link">
+  <link name="lidar_link">
     <inertial>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <mass value="0.125"/>
@@ -187,13 +184,13 @@
     </visual>
   </link>
 
-  <joint name="$(arg namespace)_lidar_joint" type="fixed">
-    <parent link="$(arg namespace)_base_link"/>
-    <child link="$(arg namespace)_lidar_link"/>
+  <joint name="lidar_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="lidar_link"/>
     <origin xyz="0 0 ${base_height/2+0.01}" rpy="0 0 0"/>
   </joint>
 
-  <gazebo reference="$(arg namespace)_lidar_link">
+  <gazebo reference="lidar_link">
     <sensor name="lidar" type="ray">
       <always_on>true</always_on>
       <visualize>true</visualize>
@@ -221,26 +218,25 @@
       <plugin name="scan" filename="libgazebo_ros_ray_sensor.so">
         <ros>
           <remapping>~/out:=scan</remapping>
-          <namespace>$(arg namespace)</namespace>
         </ros>
         <output_type>sensor_msgs/LaserScan</output_type>
-        <frame_name>$(arg namespace)_lidar_link</frame_name>
+        <frame_name>lidar_link</frame_name>
       </plugin>
     </sensor>
   </gazebo>
 
-  <link name="$(arg namespace)_camera_link">
+  <link name="camera_link">
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <box size="0.015 0.130 0.022"/>
+        <box size="0 0 0"/>
       </geometry>
     </visual>
 
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <box size="0.015 0.130 0.022"/>
+        <box size="0 0 0"/>
       </geometry>
     </collision>
 
@@ -251,46 +247,43 @@
     </inertial>
   </link>
 
-  <joint name="$(arg namespace)_camera_joint" type="fixed">
-    <parent link="$(arg namespace)_base_link"/>
-    <child link="$(arg namespace)_camera_link"/>
+  <joint name="camera_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="camera_link"/>
     <origin xyz="${base_length/2} 0 0.01" rpy="0 0 0"/>
   </joint>
 
-  <link name="$(arg namespace)_camera_depth_frame"/>
+  <link name="camera_depth_frame"/>
 
-  <joint name="$(arg namespace)_camera_depth_joint" type="fixed">
-    <origin xyz="0 0 0" rpy="${-pi/2} 0 ${-pi/2}"/>
-    <parent link="$(arg namespace)_camera_link"/>
-    <child link="$(arg namespace)_camera_depth_frame"/>
+  <joint name="camera_depth_joint" type="fixed">
+    <origin xyz="1 1 1" rpy="${-pi/2} 0 ${-pi/2}"/>
+    <parent link="camera_link"/>
+    <child link="camera_depth_frame"/>
   </joint>
 
-  <gazebo reference="$(arg namespace)_camera_link">
-    <sensor name="depth_camera" type="depth">
+  <gazebo reference="camera_link">
+    <sensor name="camera" type="camera">
       <visualize>true</visualize>
       <update_rate>30.0</update_rate>
       <camera name="camera">
-        <horizontal_fov>1.047198</horizontal_fov>
+        <horizontal_fov>1.5708</horizontal_fov>
         <image>
           <width>640</width>
           <height>480</height>
           <format>R8G8B8</format>
         </image>
         <clip>
-          <near>0.05</near>
-          <far>3</far>
+          <near>0.1</near>
+          <far>100</far>
         </clip>
       </camera>
-      <plugin name="depth_camera_controller" filename="libgazebo_ros_camera.so">
-        <ros>
-          <namespace>$(arg namespace)</namespace>
-        </ros>
+      <plugin name="gazebo_ros_cameraaaaaaaaaaa" filename="libgazebo_ros_camera.so">
         <baseline>0.2</baseline>
         <alwaysOn>true</alwaysOn>
         <updateRate>0.0</updateRate>
         <frame_name>camera_depth_frame</frame_name>
-        <pointCloudCutoff>0.5</pointCloudCutoff>
-        <pointCloudCutoffMax>3.0</pointCloudCutoffMax>
+        <pointCloudCutoff>0.1</pointCloudCutoff>
+        <pointCloudCutoffMax>100</pointCloudCutoffMax>
         <distortionK1>0</distortionK1>
         <distortionK2>0</distortionK2>
         <distortionK3>0</distortionK3>

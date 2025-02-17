@@ -15,7 +15,7 @@ def generate_launch_description():
     
 
     # Arquivos 
-    default_model_path = join(pkg_share, 'src/description/rl-bot-description.urdf')
+    default_model_path = join(pkg_share, 'src/description/turtle-rl-bot-description.urdf')
     default_nav2_config = join(pkg_share,'config/nav2_params.yaml')
     default_nav2bring_config = join(pkg_share,'config/nav2bringup_params.yaml')
     default_rviz_config_path = join(pkg_share, 'rviz/basic_urdf_config.rviz')

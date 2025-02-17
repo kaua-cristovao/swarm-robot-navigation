@@ -22,7 +22,7 @@ from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, ExecuteProcess, IncludeLaunchDescription
 from launch.conditions import IfCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch.substitutions import LaunchConfiguration, PythonExpression
+from launch.substitutions import Command, LaunchConfiguration, PythonExpression
 from launch_ros.actions import Node
 
 
@@ -149,12 +149,12 @@ def generate_launch_description():
 
     declare_robot_name_cmd = DeclareLaunchArgument(
         'robot_name',
-        default_value='turtlebot3_waffle',
+        default_value='complete_bot',
         description='name of the robot')
 
     declare_robot_sdf_cmd = DeclareLaunchArgument(
         'robot_sdf',
-        default_value=os.path.join(bringup_dir, 'worlds', 'waffle.model'),
+        default_value=os.path.join(pkg_share, 'src/description/complete-bot-description.urdf'),
         description='Full path to robot sdf file to spawn the robot in gazebo')
 
     # Specify the actions
@@ -170,9 +170,9 @@ def generate_launch_description():
         cmd=['gzclient'],
         cwd=[launch_dir], output='screen')
 
-    urdf = os.path.join(bringup_dir, 'urdf', 'turtlebot3_waffle.urdf')
-    with open(urdf, 'r') as infp:
-        robot_description = infp.read()
+    urdf = Command(['xacro ', LaunchConfiguration('robot_sdf')])
+    # with open(urdf, 'r') as infp:
+    #     robot_description = infp.read()
 
     start_robot_state_publisher_cmd = Node(
         condition=IfCondition(use_robot_state_pub),
@@ -182,7 +182,7 @@ def generate_launch_description():
         namespace=namespace,
         output='screen',
         parameters=[{'use_sim_time': use_sim_time,
-                     'robot_description': robot_description}],
+                     'robot_description': urdf}],
         remappings=remappings)
 
     start_gazebo_spawner_cmd = Node(
@@ -191,10 +191,22 @@ def generate_launch_description():
         output='screen',
         arguments=[
             '-entity', robot_name,
-            '-file', robot_sdf,
             '-robot_namespace', namespace,
+            '-topic','robot_description',
             '-x', pose['x'], '-y', pose['y'], '-z', pose['z'],
             '-R', pose['R'], '-P', pose['P'], '-Y', pose['Y']])
+    
+    start_white_detector_cmd = Node(
+        # condition=IfCondition(use_robot_state_pub),
+        package='swarm-robot-navigation',
+        executable='white_detector',
+        name='white_detector',
+        namespace=namespace,
+        output='screen',
+        # parameters=[{'use_sim_time': use_sim_time,
+        #              'robot_description': urdf}],
+        # remappings=remappings)
+    )
 
     rviz_cmd = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
@@ -246,6 +258,7 @@ def generate_launch_description():
     ld.add_action(start_gazebo_spawner_cmd)
 
     # Add the actions to launch all of the navigation nodes
+    ld.add_action(start_white_detector_cmd)
     ld.add_action(start_robot_state_publisher_cmd)
     ld.add_action(rviz_cmd)
     ld.add_action(bringup_cmd)

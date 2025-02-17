@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<robot name="complete_bot" xmlns:xacro="http://ros.org/wiki/xacro">
+<robot name="rl_bot" xmlns:xacro="http://ros.org/wiki/xacro">
   <!-- Define robot constants -->
   <xacro:property name="base_width" value="0.31"/>
   <xacro:property name="base_length" value="0.42"/>
