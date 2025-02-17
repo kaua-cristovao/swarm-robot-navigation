@@ -98,14 +98,14 @@ private:
         (void) request; // Não usado
         response->success = true;
         response->message = "Fração de pixels brancos: " + std::to_string(white_fraction_) + " Direcao: " + std::to_string(direction_);
-        RCLCPP_INFO(this->get_logger(), "Serviço chamado: %s", response->message.c_str());
+        // RCLCPP_INFO(this->get_logger(), "Serviço chamado: %s", response->message.c_str());
     }
 
     void timer_callback()
     {
       auto message = std_msgs::msg::String();
       message.data = "Fração de pixels brancos: " + std::to_string(white_fraction_) + " Direcao: " + std::to_string(direction_);
-      RCLCPP_INFO(this->get_logger(), "Publicando: '%s'", message.data.c_str());
+    //   RCLCPP_INFO(this->get_logger(), "Publicando: '%s'", message.data.c_str());
       publisher_->publish(message);
     }
 

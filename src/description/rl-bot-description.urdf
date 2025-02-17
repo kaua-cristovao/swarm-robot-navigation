@@ -4,6 +4,8 @@
   <xacro:property name="base_width" value="0.31"/>
   <xacro:property name="base_length" value="0.42"/>
   <xacro:arg name="namespace" default="robot"/>
+  <xacro:property name="ns" value="$(arg namespace)"/>
+
 
   <xacro:property name="base_height" value="0.10"/>
 
@@ -40,13 +42,13 @@
   </xacro:macro>
 
   <!-- Robot Base -->
-  <link name="$(arg namespace)_base_link">
+  <link name="base_link">
     <visual>
       <geometry>
         <box size="${base_length} ${base_width} ${base_height}"/>
       </geometry>
-      <material name="Yellow">
-        <color rgba="1.0 1.0 0 1.0"/>
+      <material name="Cyan">
+        <color rgba="0 1.0 1.0 1.0"/>
       </material>
     </visual>
     <collision>
@@ -60,22 +62,30 @@
 
 
 	<!-- Robot Footprint -->
-  <link name="$(arg namespace)_base_footprint"/>
+  <link name="base_footprint"/>
 
-  <joint name="$(arg namespace)_base_joint" type="fixed">
-    <parent link="$(arg namespace)_base_link"/>
-    <child link="$(arg namespace)_base_footprint"/>
+  <joint name="base_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="base_footprint"/>
     <origin xyz="0.0 0.0 ${-(wheel_radius+wheel_zoff)}" rpy="0 0 0"/>
   </joint>
 
 	<!-- Wheels -->
   <xacro:macro name="wheel" params="prefix x_reflect y_reflect">
-    <link name="$(arg namespace)_${prefix}_link">
+    <link name="${prefix}_link">
       <visual>
         <origin xyz="0 0 0" rpy="${pi/2} 0 0"/>
         <geometry>
             <cylinder radius="${wheel_radius}" length="${wheel_width}"/>
         </geometry>
+        <surface>
+          <friction>
+            <ode>
+              <mu>1.0</mu>  <!-- Coeficiente de atrito estático -->
+              <mu2>1.0</mu2> <!-- Coeficiente de atrito dinâmico -->
+            </ode>
+          </friction>
+        </surface>
         <material name="Gray">
           <color rgba="0.5 0.5 0.5 1.0"/>
         </material>
@@ -88,13 +98,13 @@
         </geometry>
       </collision>
 
-      <xacro:cylinder_inertia m="0.5" r="${wheel_radius}" h="${wheel_width}"/>
+      <xacro:cylinder_inertia m="5" r="${wheel_radius}" h="${wheel_width}"/>
     </link>
 
-    <joint name="$(arg namespace)_${prefix}_joint" type="continuous">
-      <parent link="$(arg namespace)_base_link"/>
-      <child link="$(arg namespace)_${prefix}_link"/>
-      <origin xyz="${x_reflect*wheel_xoff} ${y_reflect*(0.31/2+wheel_ygap)} ${-wheel_zoff}" rpy="0 0 0"/>
+    <joint name="${prefix}_joint" type="continuous">
+      <parent link="base_link"/>
+      <child link="${prefix}_link"/>
+      <origin xyz="${x_reflect*wheel_xoff} ${y_reflect*0.175} ${-wheel_zoff}" rpy="0 0 0"/>
       <axis xyz="0 1 0"/>
     </joint>
 
@@ -105,7 +115,7 @@
   <xacro:wheel prefix="drivewhl_r" x_reflect="-1" y_reflect="-1" />
 
   <!-- Caster Wheel -->
-  <link name="$(arg namespace)_front_caster">
+  <link name="front_caster">
     <visual>
       <geometry>
         <sphere radius="${(wheel_radius+wheel_zoff-(base_height/2))}"/>
@@ -114,7 +124,6 @@
           <color rgba="0.5 0.5 0.5 1.0"/>
       </material>
     </visual>
-
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
@@ -122,23 +131,25 @@
       </geometry>
     </collision>
 
-    <xacro:sphere_inertia m="0.5" r="${(wheel_radius+wheel_zoff-(base_height/2))}"/>
+    <xacro:sphere_inertia m="5" r="${(wheel_radius+wheel_zoff-(base_height/2))}"/>
   </link>
 
-  <joint name="$(arg namespace)_caster_joint" type="continuous">
-    <parent link="$(arg namespace)_base_link"/>
-    <child link="$(arg namespace)_front_caster"/>
+  <joint name="caster_joint" type="continuous">
+    <parent link="base_link"/>
+    <child link="front_caster"/>
     <origin xyz="${caster_xoff} 0.0 ${-(base_height/2)}" rpy="0 0 0"/>
   </joint>
 
   <gazebo>
     <plugin name='diff_drive' filename='libgazebo_ros_diff_drive.so'>
-      <ros>
-        <namespace>$(arg namespace)</namespace>
-      </ros>
       <!-- wheels -->
-      <left_joint>$(arg namespace)_drivewhl_l_joint</left_joint>
-      <right_joint>$(arg namespace)_drivewhl_r_joint</right_joint>
+      <xacro:if value="${ns != 'robot'}">  
+        <ros>
+          <namespace>$(arg namespace)</namespace>
+        </ros>
+      </xacro:if>
+      <left_joint>drivewhl_l_joint</left_joint>
+      <right_joint>drivewhl_r_joint</right_joint>
 
       <!-- kinematics -->
       <wheel_separation>0.4</wheel_separation>
@@ -154,11 +165,11 @@
       <publish_wheel_tf>true</publish_wheel_tf>
 
       <odometry_frame>odom</odometry_frame>
-      <robot_base_frame>$(arg namespace)_base_link</robot_base_frame>
+      <robot_base_frame>base_link</robot_base_frame>
     </plugin>
   </gazebo>
 
-  <link name="$(arg namespace)_lidar_link">
+  <link name="lidar_link">
     <inertial>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <mass value="0.125"/>
@@ -180,13 +191,13 @@
     </visual>
   </link>
 
-  <joint name="$(arg namespace)_lidar_joint" type="fixed">
-    <parent link="$(arg namespace)_base_link"/>
-    <child link="$(arg namespace)_lidar_link"/>
+  <joint name="lidar_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="lidar_link"/>
     <origin xyz="0 0 ${base_height/2+0.01}" rpy="0 0 0"/>
   </joint>
 
-  <gazebo reference="$(arg namespace)_lidar_link">
+  <gazebo reference="lidar_link">
     <sensor name="lidar" type="ray">
       <always_on>true</always_on>
       <visualize>true</visualize>
@@ -213,11 +224,13 @@
       </ray>
       <plugin name="scan" filename="libgazebo_ros_ray_sensor.so">
         <ros>
+          <xacro:if value="${ns != 'robot'}"> 
+            <namespace>$(arg namespace)</namespace>
+          </xacro:if>
           <remapping>~/out:=scan</remapping>
-          <namespace>$(arg namespace)</namespace>
         </ros>
         <output_type>sensor_msgs/LaserScan</output_type>
-        <frame_name>$(arg namespace)_lidar_link</frame_name>
+        <frame_name>lidar_link</frame_name>
       </plugin>
     </sensor>
   </gazebo>

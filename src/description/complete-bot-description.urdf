@@ -3,7 +3,9 @@
   <!-- Define robot constants -->
   <xacro:property name="base_width" value="0.31"/>
   <xacro:property name="base_length" value="0.42"/>
-  <!-- <xacro:arg name="namespace" default="robot"/> -->
+  <xacro:arg name="namespace" default="robot"/>
+  <xacro:property name="ns" value="$(arg namespace)"/>
+
 
   <xacro:property name="base_height" value="0.10"/>
 
@@ -141,6 +143,11 @@
   <gazebo>
     <plugin name='diff_drive' filename='libgazebo_ros_diff_drive.so'>
       <!-- wheels -->
+      <xacro:if value="${ns != 'robot'}">  
+        <ros>
+          <namespace>$(arg namespace)</namespace>
+        </ros>
+      </xacro:if>
       <left_joint>drivewhl_l_joint</left_joint>
       <right_joint>drivewhl_r_joint</right_joint>
 
@@ -217,6 +224,9 @@
       </ray>
       <plugin name="scan" filename="libgazebo_ros_ray_sensor.so">
         <ros>
+          <xacro:if value="${ns != 'robot'}"> 
+            <namespace>$(arg namespace)</namespace>
+          </xacro:if>
           <remapping>~/out:=scan</remapping>
         </ros>
         <output_type>sensor_msgs/LaserScan</output_type>
@@ -278,6 +288,11 @@
         </clip>
       </camera>
       <plugin name="gazebo_ros_cameraaaaaaaaaaa" filename="libgazebo_ros_camera.so">
+        <xacro:if value="${ns != 'robot'}">
+          <ros>
+            <namespace>$(arg namespace)</namespace>
+          </ros>
+        </xacro:if>
         <baseline>0.2</baseline>
         <alwaysOn>true</alwaysOn>
         <updateRate>0.0</updateRate>

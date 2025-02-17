@@ -19,14 +19,16 @@ import os
 from ament_index_python.packages import get_package_share_directory
 
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, ExecuteProcess, IncludeLaunchDescription
+from launch.actions import DeclareLaunchArgument, ExecuteProcess, IncludeLaunchDescription, OpaqueFunction
 from launch.conditions import IfCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import Command, LaunchConfiguration, PythonExpression
 from launch_ros.actions import Node
 
 
+
 def generate_launch_description():
+    print('hello world')
     # Get the launch directory
     bringup_dir = get_package_share_directory('nav2_bringup')
     pkg_share = get_package_share_directory('swarm-robot-navigation')
@@ -76,7 +78,7 @@ def generate_launch_description():
 
     declare_use_namespace_cmd = DeclareLaunchArgument(
         'use_namespace',
-        default_value='false',
+        default_value='False',
         description='Whether to apply a namespace to the navigation stack')
 
     declare_slam_cmd = DeclareLaunchArgument(
@@ -154,7 +156,7 @@ def generate_launch_description():
 
     declare_robot_sdf_cmd = DeclareLaunchArgument(
         'robot_sdf',
-        default_value=os.path.join(pkg_share, 'src/description/complete-bot-description.urdf'),
+        default_value=os.path.join(pkg_share, 'src/description/rl-bot-description.urdf'),
         description='Full path to robot sdf file to spawn the robot in gazebo')
 
     # Specify the actions
@@ -170,7 +172,18 @@ def generate_launch_description():
         cmd=['gzclient'],
         cwd=[launch_dir], output='screen')
 
-    urdf = Command(['xacro ', LaunchConfiguration('robot_sdf')])
+
+    # OpaqueFunction(function=extract_namespace,args=[LaunchConfiguration('namespace'),LaunchConfiguration('use_namespace')])
+    # if use_namespace_value:
+    #     urdf = Command([
+    #         'xacro ', LaunchConfiguration('robot_sdf'),
+    #         ' namespace:=', namespace_value
+    #     ]) 
+    # else:
+    #     urdf = Command([
+    #         'xacro ', LaunchConfiguration('robot_sdf')]),
+        
+
     # with open(urdf, 'r') as infp:
     #     robot_description = infp.read()
 
@@ -182,13 +195,18 @@ def generate_launch_description():
         namespace=namespace,
         output='screen',
         parameters=[{'use_sim_time': use_sim_time,
-                     'robot_description': urdf}],
+                    'robot_description': Command([
+                                  'xacro ', LaunchConfiguration('robot_sdf'),
+                                  ' namespace:=', LaunchConfiguration('namespace')
+                    ])
+        }],
         remappings=remappings)
 
     start_gazebo_spawner_cmd = Node(
         package='gazebo_ros',
         executable='spawn_entity.py',
         output='screen',
+        namespace=namespace,
         arguments=[
             '-entity', robot_name,
             '-robot_namespace', namespace,
