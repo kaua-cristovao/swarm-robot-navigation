@@ -10,9 +10,12 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(std_srvs REQUIRED)
-# find_package(nav2_msgs REQUIRED)
+find_package(tf2_ros REQUIRED)
+find_package(tf2_sensor_msgs REQUIRED)
+find_package(laser_geometry REQUIRED)
 # find_package(rclcpp_action REQUIRED)
-# find_package(geometry_msgs REQUIRED)
+find_package(tf2_geometry_msgs REQUIRED)
+
 
 # uncomment the following section in order to fill in
 # further dependencies manually.
@@ -20,14 +23,12 @@ find_package(std_srvs REQUIRED)
 
 add_executable(white_detector src/white_detector.cpp)
 ament_target_dependencies(white_detector rclcpp sensor_msgs std_srvs)
-
-  # target_include_directories(minimal_navigator PUBLIC
-  #   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  #   $<INSTALL_INTERFACE:include>)
-# target_compile_features(my_node PUBLIC c_std_99 cxx_std_17)  # Require C99 and C++17
-
 install(TARGETS white_detector
   DESTINATION lib/${PROJECT_NAME})
+
+add_executable(merged_scan src/merged_scan.cpp)
+ament_target_dependencies(merged_scan rclcpp sensor_msgs tf2_ros tf2_geometry_msgs tf2_sensor_msgs laser_geometry)
+install(TARGETS merged_scan DESTINATION lib/${PROJECT_NAME})
 
 install(
   DIRECTORY src launch rviz config world behavior_tree

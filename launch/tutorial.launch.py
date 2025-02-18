@@ -22,7 +22,7 @@ from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, ExecuteProcess, IncludeLaunchDescription, OpaqueFunction
 from launch.conditions import IfCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch.substitutions import Command, LaunchConfiguration, PythonExpression
+from launch.substitutions import Command, LaunchConfiguration, PythonExpression, PathJoinSubstitution
 from launch_ros.actions import Node
 
 
@@ -73,12 +73,12 @@ def generate_launch_description():
     # Declare the launch arguments
     declare_namespace_cmd = DeclareLaunchArgument(
         'namespace',
-        default_value='',
+        default_value='teste',
         description='Top-level namespace')
 
     declare_use_namespace_cmd = DeclareLaunchArgument(
         'use_namespace',
-        default_value='False',
+        default_value='True',
         description='Whether to apply a namespace to the navigation stack')
 
     declare_slam_cmd = DeclareLaunchArgument(
@@ -172,23 +172,8 @@ def generate_launch_description():
         cmd=['gzclient'],
         cwd=[launch_dir], output='screen')
 
-
-    # OpaqueFunction(function=extract_namespace,args=[LaunchConfiguration('namespace'),LaunchConfiguration('use_namespace')])
-    # if use_namespace_value:
-    #     urdf = Command([
-    #         'xacro ', LaunchConfiguration('robot_sdf'),
-    #         ' namespace:=', namespace_value
-    #     ]) 
-    # else:
-    #     urdf = Command([
-    #         'xacro ', LaunchConfiguration('robot_sdf')]),
-        
-
-    # with open(urdf, 'r') as infp:
-    #     robot_description = infp.read()
-
-    start_robot_state_publisher_cmd = Node(
-        condition=IfCondition(use_robot_state_pub),
+    start_robot_state_publisher_cmd_with_ns = Node(
+        condition=IfCondition(PythonExpression([use_robot_state_pub,' and ', use_namespace])),
         package='robot_state_publisher',
         executable='robot_state_publisher',
         name='robot_state_publisher',
@@ -201,8 +186,23 @@ def generate_launch_description():
                     ])
         }],
         remappings=remappings)
+    
+    start_robot_state_publisher_cmd_without_ns = Node(
+        condition=IfCondition(PythonExpression([use_robot_state_pub,' and not ', use_namespace])),
+        package='robot_state_publisher',
+        executable='robot_state_publisher',
+        name='robot_state_publisher',
+        output='screen',
+        parameters=[{'use_sim_time': use_sim_time,
+                    'robot_description': Command([
+                                  'xacro ', LaunchConfiguration('robot_sdf'),
+                                #   ' namespace:=', LaunchConfiguration('namespace')
+                    ])
+        }],
+        remappings=remappings)
 
-    start_gazebo_spawner_cmd = Node(
+    start_gazebo_spawner_cmd_with_ns = Node(
+        condition=IfCondition(use_namespace),
         package='gazebo_ros',
         executable='spawn_entity.py',
         output='screen',
@@ -210,6 +210,17 @@ def generate_launch_description():
         arguments=[
             '-entity', robot_name,
             '-robot_namespace', namespace,
+            '-topic',PathJoinSubstitution(['/', LaunchConfiguration('namespace'), 'robot_description']),
+            '-x', pose['x'], '-y', pose['y'], '-z', pose['z'],
+            '-R', pose['R'], '-P', pose['P'], '-Y', pose['Y']])
+    
+    start_gazebo_spawner_cmd_without_ns = Node(
+        condition=IfCondition(PythonExpression([' not ', use_namespace])),
+        package='gazebo_ros',
+        executable='spawn_entity.py',
+        output='screen',
+        arguments=[
+            '-entity', robot_name,
             '-topic','robot_description',
             '-x', pose['x'], '-y', pose['y'], '-z', pose['z'],
             '-R', pose['R'], '-P', pose['P'], '-Y', pose['Y']])
@@ -273,11 +284,13 @@ def generate_launch_description():
     # Add any conditioned actions
     ld.add_action(start_gazebo_server_cmd)
     ld.add_action(start_gazebo_client_cmd)
-    ld.add_action(start_gazebo_spawner_cmd)
+    ld.add_action(start_gazebo_spawner_cmd_with_ns)
+    ld.add_action(start_gazebo_spawner_cmd_without_ns)
 
     # Add the actions to launch all of the navigation nodes
     ld.add_action(start_white_detector_cmd)
-    ld.add_action(start_robot_state_publisher_cmd)
+    ld.add_action(start_robot_state_publisher_cmd_with_ns)
+    ld.add_action(start_robot_state_publisher_cmd_without_ns)
     ld.add_action(rviz_cmd)
     ld.add_action(bringup_cmd)
 

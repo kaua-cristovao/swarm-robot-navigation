@@ -4,6 +4,8 @@ from launch.actions import DeclareLaunchArgument, OpaqueFunction
 import launch_ros
 import os
 
+
+
 def create_rviz_file(insert_text):
     pkg_share = launch_ros.substitutions.FindPackageShare(package='swarm-robot-navigation').find('swarm-robot-navigation')
     default_rviz_config_path = os.path.join(pkg_share, 'rviz/urdf_config.rviz')
@@ -27,6 +29,7 @@ def generate_robots(context):
     pkg_share = launch_ros.substitutions.FindPackageShare(package='swarm-robot-navigation').find('swarm-robot-navigation')
     num_robots = int(LaunchConfiguration('num_robots').perform(context))
     
+    robot_scan_topics = []
     robot_nodes = []
     insert = ''
     for i in range(num_robots):
@@ -35,15 +38,21 @@ def generate_robots(context):
         model_path = ''
         if i == 0:
             robot_type = 'Complete'
-            model_path = os.path.join(pkg_share, 'src/description/complete-bot-description.urdf')
+            model_path = os.path.join(pkg_share, 'src/description/multi-complete-bot-description.urdf')
         else:
             robot_type = 'RL'
-            model_path = os.path.join(pkg_share, 'src/description/rl-bot-description.urdf')
+            model_path = os.path.join(pkg_share, 'src/description/multi-rl-bot-description.urdf')
         
         robot_name = f'{robot_type}_robot{i}' 
 
         insert = f'''    - Alpha: 1\n      Class: rviz_default_plugins/RobotModel\n      Description Topic:\n        Depth: 5\n        Durability Policy: Volatile\n        History Policy: Keep Last\n        Reliability Policy: Reliable\n        Value: {robot_name}/robot_description\n      Enabled: true\n      Name: {robot_name}_Model\n      Visual Enabled: true\n{insert}'''
         
+        robot_scan_topics.append(f'{robot_name}/scan')
+        
+        x_init = (i % 2) * 0.5 
+        y_init = i * 0.5 
+        z_init = 0.1
+
         # Nó para publicar o estado do robô
         robot_state_publisher = launch_ros.actions.Node(
             package='robot_state_publisher',
@@ -65,13 +74,38 @@ def generate_robots(context):
         spawn_entity = launch_ros.actions.Node(
             package='gazebo_ros',
             executable='spawn_entity.py',
-            arguments=['-entity', robot_name, '-topic', f'{robot_name}/robot_description', '-x', str(i * 2), '-y', '0', '-z', '0.1'],
+            arguments=['-entity', robot_name, '-topic', f'{robot_name}/robot_description', '-x', str(x_init), '-y', str(y_init), '-z', str(z_init)],
             output='screen'
         )
 
+        # Publica a transformação estática map -> robotX/odom
+        static_tf = launch_ros.actions.Node(
+            package="tf2_ros",
+            executable="static_transform_publisher",
+            name=f"static_tf_map_to_{robot_name}_odom",
+            arguments=[
+                str(x_init), str(y_init), str(z_init),  # Posição inicial (x, y, z)
+                "0", "0", "0",      # Orientação (roll, pitch, yaw)
+                "map", f"{robot_name}/odom"     # Frames de origem e destino
+            ]
+        )
+
         # Adiciona os nós gerados à lista
-        robot_nodes.extend([robot_state_publisher, joint_state_publisher, spawn_entity])
+        robot_nodes.extend([robot_state_publisher, joint_state_publisher, spawn_entity, static_tf])
+
     create_rviz_file(insert)
+
+    # Nó do MergedScan (compartilhado entre todos os robôs)
+    merged_scan = launch_ros.actions.Node(
+        package='swarm-robot-navigation',
+        executable='merged_scan',
+        name='merged_scan',
+        output='screen',
+        parameters=[{
+                'scan_topics': robot_scan_topics,
+            }]
+    )
+    robot_nodes.append(merged_scan)
     return robot_nodes
 
 def generate_launch_description():
@@ -93,9 +127,11 @@ def generate_launch_description():
         arguments=['-d', LaunchConfiguration('rvizconfig')],
     )
 
+    
+
     return launch.LaunchDescription([
         # Argumentos do launch
-        launch.actions.DeclareLaunchArgument('num_robots', default_value='4', description='Número de robôs na simulação'),
+        launch.actions.DeclareLaunchArgument('num_robots', default_value='2', description='Número de robôs na simulação'),
         launch.actions.DeclareLaunchArgument('rvizconfig', default_value=dynamic_rviz_config_path, description='Configuração do RViz'),
         launch.actions.DeclareLaunchArgument('use_sim_time', default_value='True', description='Ativar tempo de simulação'),
 
@@ -109,6 +145,6 @@ def generate_launch_description():
         OpaqueFunction(function=generate_robots),
 
         # Nó do RViz
-        rviz_node
+        rviz_node,
     ])
 
