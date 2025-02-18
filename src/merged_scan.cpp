@@ -4,6 +4,7 @@
 #include <tf2_ros/transform_listener.h>
 #include <tf2_ros/buffer.h>
 #include <laser_geometry/laser_geometry.hpp>
+#include <tf2_sensor_msgs/tf2_sensor_msgs.hpp>
 #include <geometry_msgs/msg/transform_stamped.hpp>
 #include <vector>
 #include <mutex>
@@ -80,8 +81,11 @@ private:
             // Transformar para o frame alvo
             sensor_msgs::msg::PointCloud2 transformed_cloud;
             if (frame_id != target_frame_) {
-                geometry_msgs::msg::TransformStamped transform = tf_buffer_->lookupTransform(
-                    target_frame_, frame_id, msg->header.stamp, rclcpp::Duration::from_seconds(0.1));
+                geometry_msgs::msg::TransformStamped transform_stamped;
+                transform_stamped = tf_buffer_->lookupTransform(
+                    target_frame_, cloud.header.frame_id, 
+                    cloud.header.stamp, tf2::durationFromSec(0.1));
+                tf2::doTransform(cloud, transformed_cloud, transform_stamped);
             } else {
                 transformed_cloud = cloud;
             }
