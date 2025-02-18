@@ -50,7 +50,7 @@ def generate_robots(context):
         robot_scan_topics.append(f'{robot_name}/scan')
         
         x_init = (i % 2) * 0.5 
-        y_init = i * 0.5 
+        y_init = i * 2 
         z_init = 0.1
 
         # Nó para publicar o estado do robô
@@ -103,6 +103,7 @@ def generate_robots(context):
         output='screen',
         parameters=[{
                 'scan_topics': robot_scan_topics,
+                'publish_frequency':0.5,
             }]
     )
     robot_nodes.append(merged_scan)

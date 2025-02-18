@@ -103,27 +103,36 @@ private:
     void publishMergedCloud() {
         std::lock_guard<std::mutex> lock(cloud_mutex_);
         if (scans_.empty()) return;
-
+    
+        // Inicia a nuvem mesclada com a primeira mensagem
         sensor_msgs::msg::PointCloud2 merged_cloud = scans_[0];
-
-        // Mescla todas as nuvens de pontos
+        
+        // Calcule o total de pontos
+        uint32_t total_points = merged_cloud.width;  // assume height = 1
+    
+        // Mescla os dados das demais nuvens
         for (size_t i = 1; i < scans_.size(); i++) {
+            // Assumindo que todas as nuvens têm o mesmo point_step e height = 1
+            total_points += scans_[i].width;
             merged_cloud.data.insert(
                 merged_cloud.data.end(),
                 scans_[i].data.begin(),
                 scans_[i].data.end()
             );
         }
-
-        // Configurar cabeçalho
+    
+        // Atualiza a largura para refletir o número total de pontos
+        merged_cloud.width = total_points;
+        // Se todas as nuvens são não organizadas, height permanece 1
+    
+        // Publica a mensagem
         merged_cloud.header.stamp = this->now();
         merged_cloud.header.frame_id = target_frame_;
-
-        // Publicar
         merged_cloud_pub_->publish(merged_cloud);
-
-        // Limpar os dados para o próximo ciclo
+    
+        // Limpa os dados para o próximo ciclo
         scans_.clear();
+        
     }
 };
 
