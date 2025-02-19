@@ -1,13 +1,17 @@
-import launch
-from launch.substitutions import Command, LaunchConfiguration
-from launch.actions import DeclareLaunchArgument, OpaqueFunction
-import launch_ros
 import os
 
+from ament_index_python.packages import get_package_share_directory
+
+from launch import LaunchDescription
+from launch.actions import DeclareLaunchArgument, ExecuteProcess, IncludeLaunchDescription, OpaqueFunction
+from launch.launch_description_sources import PythonLaunchDescriptionSource
+from launch.substitutions import Command, LaunchConfiguration
+from launch_ros.actions import Node
+from launch.launch_description_sources import PythonLaunchDescriptionSource
 
 
 def create_rviz_file(insert_text):
-    pkg_share = launch_ros.substitutions.FindPackageShare(package='swarm-robot-navigation').find('swarm-robot-navigation')
+    pkg_share = get_package_share_directory('swarm-robot-navigation')
     default_rviz_config_path = os.path.join(pkg_share, 'rviz/urdf_config.rviz')
     dynamic_rviz_config_path = os.path.join(pkg_share, 'rviz/dynamic_urdf_config.rviz')
 
@@ -26,7 +30,8 @@ def create_rviz_file(insert_text):
 def generate_robots(context):
     """Função para criar os nós dinamicamente com base em num_robots"""
     
-    pkg_share = launch_ros.substitutions.FindPackageShare(package='swarm-robot-navigation').find('swarm-robot-navigation')
+    pkg_share = get_package_share_directory('swarm-robot-navigation')
+    bringup_dir = get_package_share_directory('nav2_bringup')
     num_robots = int(LaunchConfiguration('num_robots').perform(context))
     
     robot_scan_topics = []
@@ -54,7 +59,7 @@ def generate_robots(context):
         z_init = 0.1
 
         # Nó para publicar o estado do robô
-        robot_state_publisher = launch_ros.actions.Node(
+        robot_state_publisher = Node(
             package='robot_state_publisher',
             executable='robot_state_publisher',
             namespace=robot_name,
@@ -62,7 +67,7 @@ def generate_robots(context):
         )
 
         # Nó para publicação do estado das juntas
-        joint_state_publisher = launch_ros.actions.Node(
+        joint_state_publisher = Node(
             package='joint_state_publisher',
             executable='joint_state_publisher',
             name='joint_state_publisher',
@@ -71,7 +76,7 @@ def generate_robots(context):
         )
 
         # Nó para spawnar o robô no Gazebo
-        spawn_entity = launch_ros.actions.Node(
+        spawn_entity = Node(
             package='gazebo_ros',
             executable='spawn_entity.py',
             arguments=['-entity', robot_name, '-topic', f'{robot_name}/robot_description', '-x', str(x_init), '-y', str(y_init), '-z', str(z_init)],
@@ -79,7 +84,7 @@ def generate_robots(context):
         )
 
         # Publica a transformação estática map -> robotX/odom
-        static_tf = launch_ros.actions.Node(
+        static_tf = Node(
             package="tf2_ros",
             executable="static_transform_publisher",
             name=f"static_tf_map_to_{robot_name}_odom",
@@ -95,32 +100,36 @@ def generate_robots(context):
 
     create_rviz_file(insert)
 
-    # Nó do MergedScan (compartilhado entre todos os robôs)
-    merged_scan = launch_ros.actions.Node(
-        package='swarm-robot-navigation',
-        executable='merged_scan',
-        name='merged_scan',
-        output='screen',
-        parameters=[{
-                'scan_topics': robot_scan_topics,
-                'publish_frequency':0.5,
-            }]
-    )
-    robot_nodes.append(merged_scan)
+    # # Nó do MergedScan (compartilhado entre todos os robôs)
+    # merged_scan = Node(
+    #     package='swarm-robot-navigation',
+    #     executable='merged_scan',
+    #     name='merged_scan',
+    #     output='screen',
+    #     parameters=[{
+    #             'scan_topics': robot_scan_topics,
+    #             'publish_frequency':0.5,
+    #         }]
+    # )
+    # robot_nodes.append(merged_scan)
     return robot_nodes
 
 def generate_launch_description():
     """Cria a estrutura do launch file"""
 
     # Diretório base do pacote
-    pkg_share = launch_ros.substitutions.FindPackageShare(package='swarm-robot-navigation').find('swarm-robot-navigation')
+    pkg_share = get_package_share_directory('swarm-robot-navigation')
+    bringup_dir = get_package_share_directory('nav2_bringup')
+
+    slam_toolbox_dir = get_package_share_directory('slam_toolbox')
+    slam_launch_file = os.path.join(slam_toolbox_dir, 'launch', 'online_sync_launch.py')
 
     # Caminhos de arquivos globais
     dynamic_rviz_config_path = os.path.join(pkg_share, 'rviz/dynamic_urdf_config.rviz')
     world_path = os.path.join(pkg_share, 'world/cenario.sdf')
 
     # Nó do RViz (compartilhado entre todos os robôs)
-    rviz_node = launch_ros.actions.Node(
+    rviz_node = Node(
         package='rviz2',
         executable='rviz2',
         name='rviz2',
@@ -128,16 +137,22 @@ def generate_launch_description():
         arguments=['-d', LaunchConfiguration('rvizconfig')],
     )
 
+    start_slam_toolbox_cmd = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(slam_launch_file),
+        launch_arguments={'use_sim_time': LaunchConfiguration('use_sim_time'),
+                          'slam_params_file': LaunchConfiguration('params_file')}.items(),
+    )
+
     
 
-    return launch.LaunchDescription([
+    return LaunchDescription([
         # Argumentos do launch
-        launch.actions.DeclareLaunchArgument('num_robots', default_value='2', description='Número de robôs na simulação'),
-        launch.actions.DeclareLaunchArgument('rvizconfig', default_value=dynamic_rviz_config_path, description='Configuração do RViz'),
-        launch.actions.DeclareLaunchArgument('use_sim_time', default_value='True', description='Ativar tempo de simulação'),
-
+        DeclareLaunchArgument('num_robots', default_value='2', description='Número de robôs na simulação'),
+        DeclareLaunchArgument('rvizconfig', default_value=dynamic_rviz_config_path, description='Configuração do RViz'),
+        DeclareLaunchArgument('use_sim_time', default_value='True', description='Ativar tempo de simulação'),
+        DeclareLaunchArgument('params_file', default_value=os.path.join(pkg_share, 'config', 'nav2_params.yaml'), description='Caminho para os parâmetros da simulação'),
         # Iniciar o Gazebo com o cenário
-        launch.actions.ExecuteProcess(
+        ExecuteProcess(
             cmd=['gazebo', '--verbose', '-s', 'libgazebo_ros_init.so', '-s', 'libgazebo_ros_factory.so', world_path],
             output='screen'
         ),
@@ -147,5 +162,6 @@ def generate_launch_description():
 
         # Nó do RViz
         rviz_node,
+        start_slam_toolbox_cmd,
     ])
 
