@@ -4,11 +4,9 @@ from ament_index_python.packages import get_package_share_directory
 
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, ExecuteProcess, IncludeLaunchDescription, OpaqueFunction
-from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch.substitutions import Command, LaunchConfiguration
+from launch.substitutions import Command, LaunchConfiguration, TextSubstitution
 from launch_ros.actions import Node
-from launch.launch_description_sources import PythonLaunchDescriptionSource
-
+from nav2_common.launch import RewrittenYaml
 
 def create_rviz_file(insert_text):
     pkg_share = get_package_share_directory('swarm-robot-navigation')
@@ -31,10 +29,11 @@ def generate_robots(context):
     """Função para criar os nós dinamicamente com base em num_robots"""
     
     pkg_share = get_package_share_directory('swarm-robot-navigation')
-    bringup_dir = get_package_share_directory('nav2_bringup')
+    # bringup_dir = get_package_share_directory('nav2_bringup')
     num_robots = int(LaunchConfiguration('num_robots').perform(context))
+    params_file = LaunchConfiguration('params_file')
     
-    robot_scan_topics = []
+    robot_namespaces = []
     robot_nodes = []
     insert = ''
     for i in range(num_robots):
@@ -52,10 +51,10 @@ def generate_robots(context):
 
         insert = f'''    - Alpha: 1\n      Class: rviz_default_plugins/RobotModel\n      Description Topic:\n        Depth: 5\n        Durability Policy: Volatile\n        History Policy: Keep Last\n        Reliability Policy: Reliable\n        Value: {robot_name}/robot_description\n      Enabled: true\n      Name: {robot_name}_Model\n      Visual Enabled: true\n{insert}'''
         
-        robot_scan_topics.append(f'{robot_name}/scan')
+        robot_namespaces.append(robot_name)
         
         x_init = (i % 2) * 0.5 
-        y_init = i * 2 
+        y_init = (-1)**(i%2) * 1.5 
         z_init = 0.1
 
         # Nó para publicar o estado do robô
@@ -94,24 +93,39 @@ def generate_robots(context):
                 "map", f"{robot_name}/odom"     # Frames de origem e destino
             ]
         )
-
+ 
+        start_sync_slam_toolbox_node = Node(
+            parameters=[params_file,{
+                                     'odom_frame':   TextSubstitution(text = f'{robot_name}/odom'),
+                                     'base_frame':   TextSubstitution(text = f'{robot_name}/base_link'),
+                                    #  'scan_topic':   TextSubstitution(text = f'{robot_name}/scan'),
+                                     'use_sim_time': LaunchConfiguration('use_sim_time')}
+                        ],
+            package='slam_toolbox',
+            executable='sync_slam_toolbox_node',
+            name='slam_toolbox',
+            namespace = robot_name, 
+            output='screen',
+            remappings=[('/scan', f'/{robot_name}/scan'),('/map','map')]
+        )
+        
         # Adiciona os nós gerados à lista
-        robot_nodes.extend([robot_state_publisher, joint_state_publisher, spawn_entity, static_tf])
+        robot_nodes.extend([robot_state_publisher, joint_state_publisher, spawn_entity, static_tf,start_sync_slam_toolbox_node])
 
     create_rviz_file(insert)
 
-    # # Nó do MergedScan (compartilhado entre todos os robôs)
-    # merged_scan = Node(
-    #     package='swarm-robot-navigation',
-    #     executable='merged_scan',
-    #     name='merged_scan',
-    #     output='screen',
-    #     parameters=[{
-    #             'scan_topics': robot_scan_topics,
-    #             'publish_frequency':0.5,
-    #         }]
-    # )
-    # robot_nodes.append(merged_scan)
+    # Nó do MergedMap (compartilhado entre todos os robôs)
+    merged_map = Node(
+        package='swarm-robot-navigation',
+        executable='merged_map',
+        name='merged_map',
+        output='screen',
+        parameters=[{
+                'robot_namespaces': robot_namespaces,
+                # 'publish_frequency':0.5,
+            }]
+    )
+    robot_nodes.append(merged_map)
     return robot_nodes
 
 def generate_launch_description():
@@ -137,11 +151,11 @@ def generate_launch_description():
         arguments=['-d', LaunchConfiguration('rvizconfig')],
     )
 
-    start_slam_toolbox_cmd = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource(slam_launch_file),
-        launch_arguments={'use_sim_time': LaunchConfiguration('use_sim_time'),
-                          'slam_params_file': LaunchConfiguration('params_file')}.items(),
-    )
+    # start_slam_toolbox_cmd = IncludeLaunchDescription(
+    #     PythonLaunchDescriptionSource(slam_launch_file),
+    #     launch_arguments={'use_sim_time': LaunchConfiguration('use_sim_time'),
+    #                       'slam_params_file': LaunchConfiguration('params_file')}.items(),
+    # )
 
     
 
@@ -162,6 +176,5 @@ def generate_launch_description():
 
         # Nó do RViz
         rviz_node,
-        start_slam_toolbox_cmd,
     ])
 
